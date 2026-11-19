@@ -39,6 +39,7 @@ if [ "$TARGET" = app-image ]; then rm -rf dist; fi   # the installer step reuses
 mkdir -p build/classes build/input dist
 echo "Compiling ..."
 javac -encoding UTF-8 --release 17 -cp "libs/*" -d build/classes src/Piyingxi.java
+cp packaging/icon.png build/classes/icon.png   # window/taskbar icon, read by Piyingxi.appIcons()
 printf 'Main-Class: Piyingxi\nClass-Path: %s %s\n' "$FLATLAF" "$JLAYER" > build/manifest.txt
 jar cfm build/input/piyingxi.jar build/manifest.txt -C build/classes .
 cp "libs/$FLATLAF" "libs/$JLAYER" build/input/
