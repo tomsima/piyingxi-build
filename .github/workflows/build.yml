@@ -1,0 +1,96 @@
+# Builds Piyingxi for Windows and Mac (Apple Silicon and Intel) on GitHub's own computers.
+#
+# To publish a new version for students:  go to the repository's "Actions" tab -> "Build apps" -> "Run workflow",
+# or push a tag such as v1.0.0 (git tag v1.0.0 && git push --tags). A tag also creates a Release with the downloads.
+name: Build apps
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number, like 1.0.0 (must start with a number above 0)'
+        default: '1.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            label: windows
+          - os: macos-15            # Apple Silicon Macs (M1 and newer)
+            label: mac-apple-silicon
+          - os: macos-15-intel      # older Intel Macs
+            label: mac-intel
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Work out the version number
+        id: ver
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then V="${GITHUB_REF#refs/tags/v}"; else V="${{ github.event.inputs.version }}"; fi
+          V="${V:-1.0.0}"
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "Building version $V"
+
+      - name: Install WiX Toolset 3 (needed for the Windows installer)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Invoke-WebRequest https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314.exe -OutFile wix314.exe
+          Start-Process .\wix314.exe -ArgumentList '/install','/quiet','/norestart' -Wait
+          Add-Content $env:GITHUB_PATH 'C:\Program Files (x86)\WiX Toolset v3.14\bin'
+
+      - name: Build the app
+        shell: bash
+        run: ./packaging/build.sh "${{ steps.ver.outputs.version }}" app-image
+
+      - name: Windows - make a no-install version (zip)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: Compress-Archive -Path dist/Piyingxi -DestinationPath "dist/Piyingxi-${{ steps.ver.outputs.version }}-windows-no-install.zip"
+
+      - name: Build the installer
+        shell: bash
+        run: ./packaging/build.sh "${{ steps.ver.outputs.version }}" installer
+
+      - name: Give the Mac disk images a clear name
+        if: runner.os == 'macOS'
+        shell: bash
+        run: mv "dist/Piyingxi-${{ steps.ver.outputs.version }}.dmg" "dist/Piyingxi-${{ steps.ver.outputs.version }}-${{ matrix.label }}.dmg"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: piyingxi-${{ matrix.label }}
+          path: |
+            dist/*.exe
+            dist/*.zip
+            dist/*.dmg
+          if-no-files-found: error
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: downloads
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: downloads/*
+          generate_release_notes: true
