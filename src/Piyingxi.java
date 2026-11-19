@@ -546,6 +546,7 @@ public class Piyingxi extends JFrame {
             public void windowClosing(WindowEvent e) { if (recStop != null) recStop.set(true); if (!confirmAllClosing()) return; stopPlay(); saveSrt(); System.exit(0); }
             public void windowActivated(WindowEvent e) { refreshTheme(false); }
         });
+        setIconImages(appIcons());
         pack();
         Dimension scr = Toolkit.getDefaultToolkit().getScreenSize();
         if (getWidth() > scr.width - 40) { setSize(scr.width - 40, getHeight()); validate(); } // the top bar wraps onto a second row
@@ -4406,10 +4407,29 @@ public class Piyingxi extends JFrame {
         }
     }
 
+    /** Window/taskbar icons: loads /icon.png from the jar and scales it to the sizes Windows uses. */
+    static List<Image> appIcons() {
+        List<Image> out = new ArrayList<>();
+        try (InputStream in = Piyingxi.class.getResourceAsStream("/icon.png")) {
+            if (in == null) return out;
+            Image src = javax.imageio.ImageIO.read(in);
+            for (int s : new int[]{16, 24, 32, 48, 64, 128, 256})
+                out.add(src.getScaledInstance(s, s, Image.SCALE_SMOOTH));
+        } catch (IOException ignored) {}
+        return out;
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             installLaf();
             Piyingxi app = new Piyingxi();
+            List<Image> ic = appIcons();
+            if (!ic.isEmpty()) {
+                try {
+                    if (Taskbar.isTaskbarSupported() && Taskbar.getTaskbar().isSupported(Taskbar.Feature.ICON_IMAGE))
+                        Taskbar.getTaskbar().setIconImage(ic.get(ic.size() - 1));
+                } catch (Exception ignored) {}
+            }
             app.setVisible(true);
             if (args.length > 0) app.open(new File(args[0]));
             else {
