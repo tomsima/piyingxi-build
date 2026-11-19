@@ -1,68 +1,71 @@
-# Piyingxi - turning it into an app for students
+<img width="1174" height="379" alt="piyingxi-github-3" src="https://github.com/user-attachments/assets/bce7ade3-2ff2-4ccd-a67c-7ae31ffbea64" />
 
-You have a Java program. Students (Windows / Mac) need something they can double-click, with no Java to install.
-This kit builds that: a **Windows installer (.exe)**, a **no-install Windows zip**, and **two Mac disk images (.dmg)**
-(one for Apple-silicon Macs, one for older Intel Macs). Each contains its own copy of Java.
+# piyingxi audio shadowing tool
 
-Windows and Mac apps can only be built on Windows / Mac, so GitHub's free build computers do it for you.
+piyingxi (皮影戏) is a specialist language shadowing tool currently in development for tonal language study in the classroom. 
 
-## One-time setup (about 15 minutes)
+piyingxi integrates audio shadowing capabilities with pitch and tone visualisation to address the needs of tonal language learners in the classroom. Students and instructors can observe visualised tones and make recordings that can be plotted to an overlapping contour line for instant and objective visual and aural feedback.
 
-1. Make a free account at github.com and create a **public** repository, e.g. `piyingxi`.
-   (Public matters: students can then download from it without logging in. The source code is visible to everyone.)
-2. If you have `flatlaf-3.5.4.jar` and `jlayer-1.0.1.4.jar`, put them in `libs/`. If not, the build downloads them.
-3. In a terminal, from this folder (replace YOURNAME):
+piyingxi is specifically designed for the study of Chinese languages, allowing visual insight and feedback into the actual tones of each character-associated syllable, rather than an alternative reliance on canonical tone defintions or abstracted phonological tone descriptions. The aim is to develop a useful tool for studying Chinese languages and lesser-documented dialects in particular, for which tone study remains a largely insurmountable barrier for the non-native student, but can also be used for the study of any tonal language and is intended to be adapted for independent study usage in the near future.
 
-       git init -b main
-       git add .
-       git commit -m "Piyingxi"
-       git remote add origin https://github.com/YOURNAME/piyingxi.git
-       git push -u origin main
+The latest alpha of piyingxi integrates a basic version of the qTA model (quantitative Target Approximation, see Xu, Y. & Prom-on, S. (2010-present year). qTAtrainer.praat. Available from: http://www.homepages.ucl.ac.uk/~uclyyix/qTAtrainer/) for synthetic tone contour generation. This can be very helpful for seeing how stress and focus manipulate overall sentence-level tone contour:
 
-   (Use the command line rather than the website's upload button: the hidden `.github` folder must be included.)
+<img width="1646" height="748" alt="Screenshot From 2026-11-17 14-15-45" src="https://github.com/user-attachments/assets/f123829a-926f-48d2-997c-60e4b057bcf5" />
 
-## Publishing a version
+*Blue line shows tone contour drawn from spectrogram analysis of audio, orange-dotted line shows synthetic contour using the Target Approximation model.*
 
-       git tag v1.0.0
-       git push --tags
+## Features
 
-Open the repository's **Actions** tab and wait (about 10-15 minutes). When it finishes, the repository's **Releases** page
-has the downloads. Give students that page's link together with `HOW-TO-INSTALL.txt`.
+- auto-segmentation of audio files for listening and shadowing practice
+- subtitle panel per segment that can be shown or hidden
+- auto and manual recording modes for shadowing audio with accompanying aural and visual feedback
+- spectrogram and algorithmic tone contour visualisation for comparison of source and shadowed tone realisation
+- pitch and octave adjustment to align different voice pitches during speaker comparison
+- manual contour draw tool for missed vocal pulses and octave shift bar for easy octave correction
+- initial integration of the qTA model
 
-To publish an update: change `src/Piyingxi.java`, commit, then tag `v1.0.1` (and so on).
-You can also run it by hand: Actions > "Build apps" > Run workflow (the files are then under that run, not in Releases,
-and downloading them needs a GitHub login).
+<img width="1646" height="748" alt="Screenshot From 2026-11-17 14-16-33" src="https://github.com/user-attachments/assets/eabda26e-00d2-4f7a-928d-07e11faa9c1f" />
 
-## What students will see (please read)
+*Toggled visibility of the phonetic analysis window for focused audio shadowing sessions. Subtitles can also be toggled on/off for further focus. Piyingxi also has a built in shadowing session timer (top left).*
 
-The apps are **not signed**. Signing needs paid certificates (Apple's is about $99 a year; Windows ones cost money too).
-So each student sees a one-time warning:
+## Installation
 
-* Windows: "Windows protected your PC" -> More info -> Run anyway.
-* Mac: the app is blocked the first time -> System Settings > Privacy & Security > Open Anyway.
+### Requirements
 
-`HOW-TO-INSTALL.txt` walks them through both. The Mac build is "ad hoc" signed by the script, which Apple-silicon Macs require
-before they will run it at all.
+- JDK (needs `javac`, not just the JRE)
 
-## Things I could not test
+On Debian:
 
-I tested the packaging on Linux only: it compiles, builds the app, and the packaged app starts with its own bundled Java.
-The Windows installer and the Mac disk images are built by GitHub and **I have not seen them run**. Before sending anything to a class,
-install it yourself (or ask a friend) on one Windows and one Mac machine and check: it opens, a file loads, and the microphone works.
-If the Mac asks for microphone permission and nothing happens, tell me what you see.
+```bash
+sudo apt update
+sudo apt install default-jdk git
+```
 
-## Building on your own Windows or Mac machine instead
+### Build and run
 
-Install JDK 21 (Temurin). On Windows also install WiX Toolset 3.14 and use Git Bash. Then:
+```bash
+git clone https://github.com/tomsima/piyingxi.git
+cd piyingxi
 
-       ./packaging/build.sh 1.0.0 app-image
-       ./packaging/build.sh 1.0.0 installer
+# Compile
+javac -cp "jlayer-1.0.1.4.jar:flatlaf-3.5.4.jar" Piyingxi.java
 
-Results appear in `dist/`.
+# Run
+java -cp ".:jlayer-1.0.1.4.jar:flatlaf-3.5.4.jar" Piyingxi
+```
 
-## Notes
+### Optional: build a runnable jar
 
-* Students' work lives next to their audio files (`.srt`, `.piyingxi`); settings and tone systems are in their user folder.
-* FlatLaf (Apache 2.0) and JLayer (LGPL) are open-source; bundling them in the app is permitted.
-* The workflow pins GitHub's runners (`macos-15`, `macos-15-intel`, `windows-latest`). GitHub retires old runner names from
-  time to time; if a build ever fails with "runner not found", update the names in `.github/workflows/build.yml`.
+```bash
+cat > manifest.txt << 'EOF'
+Main-Class: Piyingxi
+Class-Path: jlayer-1.0.1.4.jar flatlaf-3.5.4.jar
+
+EOF
+jar cfm piyingxi.jar manifest.txt *.class
+java -jar piyingxi.jar
+```
+
+## Project background
+
+This project was born out of a need for a shadowing tool for Chinese language learners, one that specifically allows for spectral analysis of tone within the shadowing environment. The Windows and Android-only software WorkAudioBook was the original inspiration for this project, as it is no longer supported on newer machines, and in the development of piyingxi the opportunity was taken to address the unique needs of the tonal language learner who adopts the shadowing technique for their pronunciation practice.    
