@@ -30,41 +30,39 @@ The latest alpha of piyingxi integrates a basic version of the qTA model (quanti
 
 ## Installation
 
-### Requirements
+Download the right file for your computer from the releases link to the right.
+(You do not need a GitHub account to download.)
 
-- JDK (needs `javac`, not just the JRE)
+WINDOWS
+-------
+1. Download the .zip file to run locally without installation
 
-On Debian:
 
-```bash
-sudo apt update
-sudo apt install default-jdk git
-```
+MAC
+---
+1. Which Mac do you have?  Click the Apple menu (top left) > "About This Mac".
+      - If it says "Chip: Apple M1 / M2 / M3 / M4"  ->  download the file with  apple-silicon  in its name.
+      - If it says "Processor: Intel"               ->  download the file with  intel  in its name.
+2. Open the downloaded  .dmg  file and drag  Piyingxi  into  Applications.
+3. The first time, open Piyingxi from Applications. A message will say it cannot be checked for malware. Then:
+      a) Click "Done" (do not click "Move to Trash").
+      b) Open  Apple menu > System Settings > Privacy & Security.
+      c) Scroll down to the message about Piyingxi and click  "Open Anyway". Type your Mac password.
+   (On an older Mac you can instead right-click the app, choose Open, then Open.)
+   You only have to do this once.
+4. When it asks to use the MICROPHONE, click OK.
 
-### Build and run
 
-```bash
-git clone https://github.com/tomsima/piyingxi.git
-cd piyingxi
+FIRST USE
+---------
+- File > Open, and choose an mp3 or wav file.  Each file opens in its own tab.
+- Your work is saved next to the audio file (a .srt and a .piyingxi file). Keep them together.
+- Press the red circle to record yourself.
 
-# Compile
-javac -cp "jlayer-1.0.1.4.jar:flatlaf-3.5.4.jar" Piyingxi.java
+If the microphone seems silent:
+  Windows:  Settings > Privacy & security > Microphone > allow apps to use your microphone.
+  Mac:      System Settings > Privacy & Security > Microphone > switch Piyingxi on.
 
-# Run
-java -cp ".:jlayer-1.0.1.4.jar:flatlaf-3.5.4.jar" Piyingxi
-```
-
-### Optional: build a runnable jar
-
-```bash
-cat > manifest.txt << 'EOF'
-Main-Class: Piyingxi
-Class-Path: jlayer-1.0.1.4.jar flatlaf-3.5.4.jar
-
-EOF
-jar cfm piyingxi.jar manifest.txt *.class
-java -jar piyingxi.jar
-```
 
 ## Project background
 
